@@ -34,7 +34,7 @@ public class Atm implements AtmHistory, BalanceHolder {
         }
 
         int available = currentState.getCash().getOrDefault(nominal, 0);
-        currentState.getCash().put(nominal, available+count);
+        currentState.getCash().put(nominal, available + count);
 
         save(new AtmState(currentState.getStatus(), currentState.getCash()));
     }
