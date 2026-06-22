@@ -1,7 +1,11 @@
 package org.aburavov.otus.java.professional.hw09.crm.model;
 
+import org.aburavov.otus.java.professional.hw09.jdbc.mapper.Id;
+
 public class Manager {
+    @Id
     private Long no;
+
     private String label;
     private String param1;
 
