@@ -13,7 +13,9 @@ import org.aburavov.otus.java.professional.hw09.crm.service.DbServiceClientImpl;
 import org.aburavov.otus.java.professional.hw09.crm.service.DbServiceManagerImpl;
 import org.aburavov.otus.java.professional.hw09.jdbc.mapper.DataTemplateJdbc;
 import org.aburavov.otus.java.professional.hw09.jdbc.mapper.EntityClassMetaData;
+import org.aburavov.otus.java.professional.hw09.jdbc.mapper.EntityClassMetaDataImpl;
 import org.aburavov.otus.java.professional.hw09.jdbc.mapper.EntitySQLMetaData;
+import org.aburavov.otus.java.professional.hw09.jdbc.mapper.EntitySQLMetaDataImpl;
 
 @SuppressWarnings({"java:S125", "java:S1481"})
 public class HomeWork {
@@ -24,6 +26,8 @@ public class HomeWork {
     private static final Logger log = LoggerFactory.getLogger(HomeWork.class);
 
     public static void main(String[] args) {
+        System.out.println("HW09");
+
         // Общая часть
         var dataSource = new DriverManagerDataSource(URL, USER, PASSWORD);
         flywayMigrations(dataSource);
@@ -31,10 +35,10 @@ public class HomeWork {
         var dbExecutor = new DbExecutorImpl();
 
         // Работа с клиентом
-        EntityClassMetaData<Client> entityClassMetaDataClient; // = new EntityClassMetaDataImpl();
-        EntitySQLMetaData entitySQLMetaDataClient = null; // = new EntitySQLMetaDataImpl(entityClassMetaDataClient);
-        var dataTemplateClient = new DataTemplateJdbc<Client>(
-                dbExecutor, entitySQLMetaDataClient); // реализация DataTemplate, универсальная
+        EntityClassMetaData<Client> entityClassMetaDataClient = new EntityClassMetaDataImpl<>(Client.class);
+        EntitySQLMetaData entitySQLMetaDataClient = new EntitySQLMetaDataImpl(entityClassMetaDataClient);
+        var dataTemplateClient = new DataTemplateJdbc<>(
+                dbExecutor, entitySQLMetaDataClient, entityClassMetaDataClient); // реализация DataTemplate, универсальная
 
         // Код дальше должен остаться
         var dbServiceClient = new DbServiceClientImpl(transactionRunner, dataTemplateClient);
@@ -48,9 +52,9 @@ public class HomeWork {
 
         // Сделайте тоже самое с классом Manager (для него надо сделать свою таблицу)
 
-        EntityClassMetaData<Manager> entityClassMetaDataManager; // = new EntityClassMetaDataImpl();
-        EntitySQLMetaData entitySQLMetaDataManager = null; // = new EntitySQLMetaDataImpl(entityClassMetaDataManager);
-        var dataTemplateManager = new DataTemplateJdbc<Manager>(dbExecutor, entitySQLMetaDataManager);
+        EntityClassMetaData<Manager> entityClassMetaDataManager = new EntityClassMetaDataImpl<>(Manager.class);
+        EntitySQLMetaData entitySQLMetaDataManager = new EntitySQLMetaDataImpl(entityClassMetaDataManager);
+        var dataTemplateManager = new DataTemplateJdbc<>(dbExecutor, entitySQLMetaDataManager, entityClassMetaDataManager);
 
         var dbServiceManager = new DbServiceManagerImpl(transactionRunner, dataTemplateManager);
         dbServiceManager.saveManager(new Manager("ManagerFirst"));
