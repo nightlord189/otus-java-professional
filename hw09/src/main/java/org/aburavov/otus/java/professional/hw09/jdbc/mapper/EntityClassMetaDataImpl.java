@@ -19,6 +19,7 @@ public class EntityClassMetaDataImpl<T> implements EntityClassMetaData<T> {
         this.clazz = clazz;
         this.name = clazz.getSimpleName().toLowerCase();
         this.allFields = List.of(clazz.getDeclaredFields());
+        this.allFields.forEach(field -> field.setAccessible(true));
         this.idField = findIdField();
         this.fieldsWithoutId = allFields.stream()
                 .filter(field -> !field.equals(idField))
@@ -52,11 +53,17 @@ public class EntityClassMetaDataImpl<T> implements EntityClassMetaData<T> {
     }
 
     private Field findIdField() {
-        return allFields.stream()
+        var idFields = allFields.stream()
                 .filter(field -> field.isAnnotationPresent(Id.class))
-                .findFirst()
-                .orElseThrow(() -> new EntityClassMetaDataException(
-                        "No field annotated with @Id found in " + clazz.getName()));
+                .toList();
+        if (idFields.isEmpty()) {
+            throw new EntityClassMetaDataException("No field annotated with @Id found in " + clazz.getName());
+        }
+        if (idFields.size() > 1) {
+            throw new EntityClassMetaDataException("Exactly one @Id field expected in " + clazz.getName()
+                    + ", but found " + idFields.size() + ": " + idFields);
+        }
+        return idFields.get(0);
     }
 
     private Constructor<T> findConstructor() {

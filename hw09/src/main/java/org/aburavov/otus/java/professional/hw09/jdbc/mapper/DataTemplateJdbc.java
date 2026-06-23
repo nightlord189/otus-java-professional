@@ -94,7 +94,6 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
 
     private Object fieldValue(T object, Field field) {
         try {
-            field.setAccessible(true);
             return field.get(object);
         } catch (IllegalAccessException e) {
             throw new DataTemplateException(e);
