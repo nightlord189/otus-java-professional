@@ -16,10 +16,7 @@ dependencies {
 
     implementation("ch.qos.logback:logback-classic:1.5.18")
     implementation("org.hibernate.orm:hibernate-core:6.6.13.Final")
-    implementation("org.flywaydb:flyway-core:11.7.2")
     implementation("org.postgresql:postgresql:42.7.5")
-
-    runtimeOnly("org.flywaydb:flyway-database-postgresql:11.7.2")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
