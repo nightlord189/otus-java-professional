@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 
 public class DbServiceDemo {
 
@@ -28,32 +29,46 @@ public class DbServiceDemo {
         var clientTemplate = new DataTemplateHibernate<>(Client.class);
         var dbServiceClient = new DbServiceClientImpl(transactionManager, clientTemplate);
 
-        var firstClient = new Client(
-                null,
-                "Ivan",
-                new Address("Pushkina"),
-                List.of(new Phone("101"), new Phone("102")));
-        dbServiceClient.saveClient(firstClient);
+        // create a lot of clients until we got id > 127
+        Client firstClientSaved = null;
+        for (int i = 0; i < 130; i++) {
+            var client = new Client(
+                    null,
+                    "Ivan",
+                    new Address("Pushkina"),
+                    List.of(new Phone("101"), new Phone("102")));
+            firstClientSaved = dbServiceClient.saveClient(client);
+        }
+        log.info("using client id={} (above the Long-cache range)", firstClientSaved.getId());
 
+        for (int i= 0; i < 5; i++) {
+            Long start = System.nanoTime();
+            Optional<Client> opt = dbServiceClient.getClient(firstClientSaved.getId());
+            Long end = System.nanoTime();
+            if (opt.isPresent()) {
+                log.info("got client from db: {} with {} nanoseconds", opt.get(), end - start);
+            } else {
+                log.error("client not found");
+                break;
+            }
+        }
 
-        var clientSecond = dbServiceClient.saveClient(new Client(
-                null,
-                "Alexander",
-                new Address("Abaya"),
-                List.of(new Phone("201"))));
+        // put memory under pressure so the GC clears the WeakHashMap-based cache
+        log.info("--- applying memory pressure to evict the cache ---");
+        try {
+            var ballast = new java.util.ArrayList<long[]>();
+            while (true) {
+                ballast.add(new long[1_000_000]);
+            }
+        } catch (OutOfMemoryError e) {
+            log.info("OutOfMemoryError caught, the cache should be cleared now");
+        }
+        System.gc();
 
-        var clientSecondSelected = dbServiceClient
-                .getClient(clientSecond.getId())
-                .orElseThrow(() -> new RuntimeException("Client not found, id:" + clientSecond.getId()));
-        log.info("clientSecondSelected:{}", clientSecondSelected);
-
-        dbServiceClient.saveClient(new Client(clientSecondSelected.getId(), "dbServiceSecondUpdated"));
-        var clientUpdated = dbServiceClient
-                .getClient(clientSecondSelected.getId())
-                .orElseThrow(() -> new RuntimeException("Client not found, id:" + clientSecondSelected.getId()));
-        log.info("clientUpdated:{}", clientUpdated);
-
-        log.info("All clients");
-        dbServiceClient.findAll().forEach(client -> log.info("client:{}", client));
+        // read again: with an empty cache this must hit the database again (slower)
+        long start = System.nanoTime();
+        Optional<Client> opt = dbServiceClient.getClient(firstClientSaved.getId());
+        long end = System.nanoTime();
+        log.info("after GC: got client present={} with {} nanoseconds (back from db)", opt.isPresent(), end - start);
     }
 }
