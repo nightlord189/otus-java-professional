@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class DbServiceDemo {
+public class WebServerDemo {
 
-    private static final Logger log = LoggerFactory.getLogger(DbServiceDemo.class);
+    private static final Logger log = LoggerFactory.getLogger(WebServerDemo.class);
 
     public static final String HIBERNATE_CFG_FILE = "hibernate.cfg.xml";
 
