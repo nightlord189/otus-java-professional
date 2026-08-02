@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f5f7; display: flex; justify-content: center; padding-top: 10vh; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.15); padding: 24px 32px; width: 280px; }
+        h1 { font-size: 20px; margin-top: 0; }
+        label { display: block; margin-top: 12px; font-size: 14px; }
+        input { width: 100%; box-sizing: border-box; padding: 6px 8px; margin-top: 4px; }
+        button { margin-top: 16px; width: 100%; padding: 8px; background: #2f6fdd; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        .error { color: #c0392b; margin-top: 12px; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Вход администратора</h1>
+    <form action="/login" method="post">
+        <label>Логин
+            <input type="text" name="login" required autofocus>
+        </label>
+        <label>Пароль
+            <input type="password" name="password" required>
+        </label>
+        <button type="submit">Войти</button>
+    </form>
+    <#if error??>
+        <div class="error">${error}</div>
+    </#if>
+</div>
+</body>
+</html>
