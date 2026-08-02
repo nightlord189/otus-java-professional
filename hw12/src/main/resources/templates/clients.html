@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Клиенты</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f5f7; margin: 0; padding: 32px; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.15); padding: 24px 32px; max-width: 720px; margin: 0 auto 24px; }
+        h1, h2 { margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; font-size: 14px; }
+        th { background: #f0f2f5; }
+        label { display: block; margin-top: 12px; font-size: 14px; }
+        input { width: 100%; box-sizing: border-box; padding: 6px 8px; margin-top: 4px; }
+        button { margin-top: 16px; padding: 8px 24px; background: #2f6fdd; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        .empty { color: #777; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Клиенты</h1>
+    <#if clients?size == 0>
+        <p class="empty">Клиентов пока нет — создайте первого через форму ниже.</p>
+    <#else>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Адрес</th>
+                <th>Телефоны</th>
+            </tr>
+            <#list clients as client>
+                <tr>
+                    <td>${client.id}</td>
+                    <td>${client.name}</td>
+                    <td>${(client.address.street)!"—"}</td>
+                    <td><#list client.phones as phone>${phone.number}<#sep>, </#list></td>
+                </tr>
+            </#list>
+        </table>
+    </#if>
+</div>
+<div class="card">
+    <h2>Создать клиента</h2>
+    <form action="/clients" method="post">
+        <label>Имя
+            <input type="text" name="name" required>
+        </label>
+        <label>Адрес (улица)
+            <input type="text" name="address">
+        </label>
+        <label>Телефоны (через запятую)
+            <input type="text" name="phones" placeholder="101, 102">
+        </label>
+        <button type="submit">Создать</button>
+    </form>
+</div>
+</body>
+</html>
