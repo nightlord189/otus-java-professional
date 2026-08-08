@@ -1,9 +1,8 @@
 package org.aburavov.otus.java.professional.hw14.crm.service;
 
-import org.aburavov.otus.java.professional.hw14.crm.model.Client;
-
 import java.util.List;
 import java.util.Optional;
+import org.aburavov.otus.java.professional.hw14.crm.model.Client;
 
 public interface DBServiceClient {
 

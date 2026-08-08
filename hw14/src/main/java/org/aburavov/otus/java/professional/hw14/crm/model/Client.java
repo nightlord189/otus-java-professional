@@ -1,69 +1,13 @@
 package org.aburavov.otus.java.professional.hw14.crm.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import jakarta.persistence.*;
+import java.util.Set;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.MappedCollection;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Getter
-@Setter
-@NoArgsConstructor
-@Entity
-@Table(name = "client")
-public class Client implements Cloneable {
-
-    @Id
-    @SequenceGenerator(name = "client_gen", sequenceName = "client_seq", initialValue = 1, allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "client_gen")
-    @Column(name = "id")
-    private Long id;
-
-    @Column(name = "name")
-    private String name;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id")
-    private Address address;
-
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Phone> phones = new ArrayList<>();
-
-    public Client(String name) {
-        this.id = null;
-        this.name = name;
-    }
-
-    public Client(Long id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    public Client(Long id, String name, Address address, List<Phone> phones) {
-        this.id = id;
-        this.name = name;
-        this.address = address;
-        setPhones(phones);
-    }
-
-    public void setPhones(List<Phone> phones) {
-        this.phones = phones == null ? new ArrayList<>() : phones;
-        this.phones.forEach(phone -> phone.setClient(this));
-    }
-
-    @Override
-    @SuppressWarnings({"java:S2975", "java:S1182"})
-    public Client clone() {
-        var clonedAddress = address == null ? null : address.clone();
-        var clonedPhones = new ArrayList<Phone>();
-        phones.forEach(phone -> clonedPhones.add(phone.clone()));
-        return new Client(this.id, this.name, clonedAddress, clonedPhones);
-    }
-
-    @Override
-    public String toString() {
-        return "Client{" + "id=" + id + ", name='" + name + '\'' + ", address=" + address + ", phones=" + phones + '}';
-    }
-}
+@Table("client")
+public record Client(
+        @Id Long id,
+        String name,
+        @MappedCollection(idColumn = "client_id") Address address,
+        @MappedCollection(idColumn = "client_id") Set<Phone> phones) {}

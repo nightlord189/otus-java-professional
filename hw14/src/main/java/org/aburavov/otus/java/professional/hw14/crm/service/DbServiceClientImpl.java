@@ -1,56 +1,41 @@
 package org.aburavov.otus.java.professional.hw14.crm.service;
 
-import org.aburavov.otus.java.professional.hw14.core.repository.DataTemplate;
-import org.aburavov.otus.java.professional.hw14.core.sessionmanager.TransactionManager;
-import org.aburavov.otus.java.professional.hw14.crm.model.Client;
-import org.aburavov.otus.java.professional.hw14.crm.service.DBServiceClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import org.aburavov.otus.java.professional.hw14.crm.model.Client;
+import org.aburavov.otus.java.professional.hw14.crm.repository.ClientRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+@Service
 public class DbServiceClientImpl implements DBServiceClient {
+
     private static final Logger log = LoggerFactory.getLogger(DbServiceClientImpl.class);
 
-    private final DataTemplate<Client> clientDataTemplate;
-    private final TransactionManager transactionManager;
+    private final ClientRepository clientRepository;
 
-    public DbServiceClientImpl(TransactionManager transactionManager, DataTemplate<Client> clientDataTemplate) {
-        this.transactionManager = transactionManager;
-        this.clientDataTemplate = clientDataTemplate;
+    public DbServiceClientImpl(ClientRepository clientRepository) {
+        this.clientRepository = clientRepository;
     }
 
     @Override
     public Client saveClient(Client client) {
-        return transactionManager.doInTransaction(session -> {
-            var clientCloned = client.clone();
-            if (client.getId() == null) {
-                var savedClient = clientDataTemplate.insert(session, clientCloned);
-                log.info("created client: {}", clientCloned);
-                return savedClient;
-            }
-            var savedClient = clientDataTemplate.update(session, clientCloned);
-            log.info("updated client: {}", savedClient);
-            return savedClient;
-        });
+        var savedClient = clientRepository.save(client);
+        log.info("saved client: {}", savedClient);
+        return savedClient;
     }
 
     @Override
     public Optional<Client> getClient(long id) {
-        return transactionManager.doInReadOnlyTransaction(session -> {
-            var clientOptional = clientDataTemplate.findById(session, id);
-            log.info("client: {}", clientOptional);
-            return clientOptional;
-        });
+        return clientRepository.findById(id);
     }
 
     @Override
     public List<Client> findAll() {
-        return transactionManager.doInReadOnlyTransaction(session -> {
-            var clientList = clientDataTemplate.findAll(session);
-            log.info("clientList:{}", clientList);
-            return clientList;
-        });
+        return clientRepository.findAll().stream()
+                .sorted(Comparator.comparing(Client::id))
+                .toList();
     }
 }
