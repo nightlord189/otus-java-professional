@@ -49,7 +49,8 @@ public class SensorDataProcessorBuffered implements SensorDataProcessor {
         try {
             writer.writeBufferedData(bufferedData);
         } catch (Exception e) {
-            log.error("Ошибка в процессе записи буфера", e);
+            log.error("Ошибка в процессе записи буфера, данные возвращены в буфер", e);
+            dataBuffer.addAll(bufferedData);
         }
     }
 
