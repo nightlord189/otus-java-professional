@@ -3,7 +3,11 @@ let stompClient = null;
 const chatLineElementId = "chatLine";
 const roomIdElementId = "roomId";
 const messageElementId = "message";
+const sendElementId = "send";
 
+const specialRoomId = 1408;
+
+const isSpecialRoom = (roomId) => Number(roomId) === specialRoomId;
 
 const setConnected = (connected) => {
     const connectBtn = document.getElementById("connect");
@@ -15,17 +19,26 @@ const setConnected = (connected) => {
     chatLine.hidden = !connected;
 }
 
+const setSendEnabled = (enabled) => {
+    document.getElementById(messageElementId).disabled = !enabled;
+    document.getElementById(sendElementId).disabled = !enabled;
+}
+
 const connect = () => {
     stompClient = Stomp.over(new SockJS('/gs-guide-websocket'));
     stompClient.connect({}, (frame) => {
+        document.getElementById(chatLineElementId).replaceChildren();
         setConnected(true);
         const userName = frame.headers["user-name"];
         const roomId = document.getElementById(roomIdElementId).value;
+        const specialRoom = isSpecialRoom(roomId);
+        setSendEnabled(!specialRoom);
         console.log(`Connected to roomId: ${roomId} frame:${frame}`);
         const topicName = `/topic/response.${roomId}`;
         const topicNameUser = `/user/${userName}${topicName}`;
-        stompClient.subscribe(topicName, (message) => showMessage(JSON.parse(message.body).messageStr));
-        stompClient.subscribe(topicNameUser, (message) => showMessage(JSON.parse(message.body).messageStr));
+        const onMessage = (message) => showMessage(formatMessage(JSON.parse(message.body), specialRoom));
+        stompClient.subscribe(topicName, onMessage);
+        stompClient.subscribe(topicNameUser, onMessage);
     });
 }
 
@@ -34,14 +47,21 @@ const disconnect = () => {
         stompClient.disconnect();
     }
     setConnected(false);
+    setSendEnabled(true);
     console.log("Disconnected");
 }
 
 const sendMsg = () => {
     const roomId = document.getElementById(roomIdElementId).value;
+    if (isSpecialRoom(roomId)) {
+        console.log(`Sending messages to roomId: ${roomId} is forbidden`);
+        return;
+    }
     const message = document.getElementById(messageElementId).value;
     stompClient.send(`/app/message.${roomId}`, {}, JSON.stringify({'messageStr': message}))
 }
+
+const formatMessage = (message, withRoom) => withRoom ? `[room ${message.roomId}] ${message.messageStr}` : message.messageStr;
 
 const showMessage = (message) => {
     const chatLine = document.getElementById(chatLineElementId);

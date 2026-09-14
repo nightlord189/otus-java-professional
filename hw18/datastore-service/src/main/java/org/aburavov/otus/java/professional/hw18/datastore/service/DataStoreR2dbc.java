@@ -15,6 +15,7 @@ import org.aburavov.otus.java.professional.hw18.datastore.repository.MessageRepo
 @Service
 public class DataStoreR2dbc implements DataStore {
     private static final Logger log = LoggerFactory.getLogger(DataStoreR2dbc.class);
+    private static final Duration LOAD_DELAY = Duration.of(3, SECONDS);
     private final MessageRepository messageRepository;
     private final Scheduler workerPool;
 
@@ -32,6 +33,12 @@ public class DataStoreR2dbc implements DataStore {
     @Override
     public Flux<Message> loadMessages(String roomId) {
         log.info("loadMessages roomId:{}", roomId);
-        return messageRepository.findByRoomId(roomId).delayElements(Duration.of(3, SECONDS), workerPool);
+        return messageRepository.findByRoomId(roomId).delayElements(LOAD_DELAY, workerPool);
+    }
+
+    @Override
+    public Flux<Message> loadAllMessages() {
+        log.info("loadAllMessages");
+        return messageRepository.findAllOrdered();
     }
 }

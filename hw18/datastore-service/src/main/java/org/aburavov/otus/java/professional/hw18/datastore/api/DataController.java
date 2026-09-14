@@ -47,8 +47,21 @@ public class DataController {
         return Mono.just(roomId)
                 .doOnNext(room -> log.info("getMessagesByRoomId, room:{}", room))
                 .flatMapMany(dataStore::loadMessages)
-                .map(message -> new MessageDto(message.msgText()))
+                .map(DataController::toDto)
                 .doOnNext(msgDto -> log.info("msgDto:{}", msgDto))
                 .subscribeOn(workerPool);
+    }
+
+    @GetMapping(value = "/msg", produces = MediaType.APPLICATION_NDJSON_VALUE)
+    public Flux<MessageDto> getAllMessages() {
+        return Flux.defer(dataStore::loadAllMessages)
+                .doOnSubscribe(subscription -> log.info("getAllMessages"))
+                .map(DataController::toDto)
+                .doOnNext(msgDto -> log.info("msgDto:{}", msgDto))
+                .subscribeOn(workerPool);
+    }
+
+    private static MessageDto toDto(Message message) {
+        return new MessageDto(message.roomId(), message.msgText());
     }
 }
